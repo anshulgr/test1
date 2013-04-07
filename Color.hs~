@@ -1,0 +1,7 @@
+module Color where
+
+import Text.ParserCombinators.Parsec
+import Data.Char
+import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL
+import Data.List

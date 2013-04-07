@@ -1,0 +1,40 @@
+module Triangle where
+
+import Text.ParserCombinators.Parsec
+import Data.Char
+import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL
+
+
+triangleFound::[String] -> IO ()
+triangleFound (x:xs)= let myPoints =  (returnArgsTri 3 (x:xs))
+                                          in  hOpenGlTriangle myPoints
+					
+
+
+returnArgsTri::Int ->[String] -> [(GLfloat,GLfloat,GLfloat)]
+returnArgsTri 0 _ = []
+returnArgsTri a [] = []
+returnArgsTri a (x:xs) = (returnArgTri x):(returnArgsTri (a-1) xs)
+
+myFunc1::String -> (String,String)
+myFunc1 [] =([],[])
+myFunc1 (x:xs) = 
+                if ((x == ',') || (x == '>'))
+                 then ([],xs)
+                 else
+                  if (isSpace x)
+                    then (fst(myFunc1 xs),snd(myFunc1 xs))
+                    else (x:fst(myFunc1 xs),snd(myFunc1 xs))
+
+returnArgTri :: String -> (GLfloat,GLfloat,GLfloat)
+returnArgTri [] = (0.0,0.0,0.0)
+returnArgTri (x:xs) = if x== '<'
+                         then let (y1,z1) = (myFunc1 xs)
+                               in let (y2,z2 ) = (myFunc1 z1)
+                                    in let (y3,z3 )= (myFunc1 z2)
+                                         in ((read y1) , (read y2) , (read y3)) 
+                         else returnArgTri xs
+
+hOpenGlTriangle args= renderPrimitive Triangles $mapM_ (\(x, y, z)->vertex $ Vertex3 x y z) args
+

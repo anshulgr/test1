@@ -1,0 +1,79 @@
+module Shapes.Cylinder where
+
+import Text.ParserCombinators.Parsec
+import Data.Char
+import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL
+import Polygon
+import Appearence.Color
+import Appearence.Translate
+import Appearence.Rotate
+import Appearence.Scale
+import Data.List
+
+returnArgsCy 0 _ = []
+returnArgsCy a [] = []
+returnArgsCy a (x:xs) = (returnArgCy x):(returnArgsCy (a-1) xs)
+
+returnArgCy [] = (0.0,0.0,0.0)
+returnArgCy (x:xs) = if x== '<'
+                         then let (y1,z1) = (myFunc xs)
+                               in let (y2,z2 )= (myFunc z1)
+                                    in let (y3,z3 )= (myFunc z2)
+                                         in ((read y1) , (read y2) , (read y3)) 
+                         else returnArgCy xs
+                         
+cylinderFound::[String] -> IO ()
+cylinderFound (x:xs) = let myPoints = (returnArgsCy 2 (x:xs))
+                           rad      =  read (eatSpaces (head (tail xs)))
+					                   in  parseRCy xs myPoints rad (calcHeight myPoints)
+
+
+
+calcHeight [(x1,y1,z1),(x2,y2,z2)]= sqrt (((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2))+((z1-z2)*(z1-z2)))
+
+
+					
+parseRCy [] myPoints r h= do currentColor $= Color4 1 0 0 0
+                             hOpenGlCylinder myPoints r h
+parseRCy (xs:xss) myPoints r h = do
+                                    if (isInfixOf "color rgb" xs )
+                                     then
+                                       let interm= snd(splitAt (head(elemIndices '<' xs)) xs)
+                                       in
+                                         setColorRGB (fst (splitAt (head(elemIndices '>' xs)) interm))
+                                     else
+                                       if (isInfixOf "translate" xs )
+                                         then
+                                           let interm= snd(splitAt (head(elemIndices '<' xs)) xs)
+                                            in
+                                              translateImage (fst (splitAt (head(elemIndices '>' xs)) interm))
+                                         else
+                                           if (isInfixOf "rotate" xs )
+                                             then
+                                               let interm= snd(splitAt (head(elemIndices '<' xs)) xs)
+                                                in
+                                                  rotateImage (fst (splitAt (head(elemIndices '>' xs)) interm))
+                                             else
+                                               if (isInfixOf "scale" xs )
+                                               then
+                                                 let interm= snd(splitAt (head(elemIndices '<' xs)) xs)
+                                                  in
+                                                   scaleImage1 (fst (splitAt (head(elemIndices '>' xs)) interm))
+                                               else
+                                                 parseRCy xss myPoints r h
+                                    hOpenGlCylinder myPoints r h
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+
+
+
+
+hOpenGlCylinder myPoints rad h= renderObject Solid (Cylinder' rad h 1000 1000)
+

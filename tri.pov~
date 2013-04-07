@@ -1,0 +1,45 @@
+module Polygon where
+
+import Text.ParserCombinators.Parsec
+import Data.Char
+import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL
+
+eatSpaces::String -> String
+eatSpaces [] =[]
+eatSpaces (x:xs) | (isSpace x) = eatSpaces xs
+                 | (x== ',') = eatSpaces xs
+                 |otherwise = x:(eatSpaces xs)
+
+
+polygonFound::[String] -> IO ()
+polygonFound (x:xs)=let myPoints = (returnArgsPoly (read (eatSpaces x)) xs)
+                                       in  hOpenGlPolygon myPoints
+
+
+returnArgsPoly::Int ->[String] -> [(GLfloat,GLfloat,GLfloat)]
+returnArgsPoly 0 _ = []
+returnArgsPoly a [] = []
+returnArgsPoly a (x:xs) = (returnArgPoly x):(returnArgsPoly (a-1) xs)
+
+myFunc::String -> (String,String)
+myFunc [] =([],[])
+myFunc (x:xs) = 
+                if ((x == ',') || (x == '>'))
+                 then ([],xs)
+                 else
+                  if (isSpace x)
+                    then (fst(myFunc xs),snd(myFunc xs))
+                    else (x:fst(myFunc xs),snd(myFunc xs))
+
+returnArgPoly :: String -> (GLfloat,GLfloat,GLfloat)
+returnArgPoly [] = (0.0,0.0,0.0)
+returnArgPoly (x:xs) = if x== '<'
+                         then let (y1,z1) = (myFunc xs)
+                               in let (y2,z2 )= (myFunc z1)
+                                    in let (y3,z3 )= (myFunc z2)
+                                         in ((read y1) , (read y2) , (read y3)) 
+                         else returnArgPoly xs
+
+hOpenGlPolygon args = renderPrimitive Polygon $mapM_ (\(x, y, z)->vertex $ Vertex3 x y z) args
+

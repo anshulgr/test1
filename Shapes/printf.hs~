@@ -1,0 +1,9 @@
+data Format = Lit String | D | S
+
+format :: String -> [Format]
+
+formatHelper :: (String,String,[Format])->(String,String,[Format])
+formatHelper ((x:y:xs) , parsed , fmt )
+                 | (x:[y]) == "%d" = formatHelper (xs , parsed , (D:fmt) )
+                 | (x:[y]) == "%s" = formatHelper (xs , parsed , (S:fmt) )
+                 | otherwise = formatHelper ( (y:xs) , parsed ++ [x] , fmt )
